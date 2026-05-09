@@ -5,8 +5,8 @@ spring:
     active: dev
   datasource:
     url: jdbc:mysql://localhost:3306/co_banking_db
-    username: ${DB_USERNAME:change-me}
-    password: ${DB_PASSWORD:change-me}
+    username: root
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -74,9 +74,9 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/co_banking_dev
-    username: ${DB_USERNAME:change-me}
-    password: ${DB_PASSWORD:change-me}
+    url: jdbc:mysql://localhost:3306/co_banking_db
+    username: root
+    password: 1234
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -119,9 +119,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/co_banking_db
+    username: root
+    password: 1234
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -137,7 +137,7 @@ jwt:
 
 google:
   oauth:
-    client-id: ${GOOGLE_CLIENT_ID}
+    client-id: ${GOOGLE_CLIENT_ID:your-client-id.apps.googleusercontent.com}
 
 logging:
   level:

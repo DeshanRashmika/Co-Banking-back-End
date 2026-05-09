@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.5</version>
         <relativePath/>
     </parent>
 
@@ -24,15 +24,14 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
-        <jjwt.version>0.12.3</jjwt.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <google-api-client.version>2.6.0</google-api-client.version>
         <google-auth.version>1.19.0</google-auth.version>
-        <springdoc-openapi.version>2.4.0</springdoc-openapi.version>
-        <testcontainers.version>1.19.8</testcontainers.version>
+        <springdoc-openapi.version>2.7.0</springdoc-openapi.version>
+        <testcontainers.version>1.21.0</testcontainers.version>
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -127,7 +126,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi.version}</version>
+            <version>2.6.0</version>
         </dependency>
 
         <!-- Lombok -->
