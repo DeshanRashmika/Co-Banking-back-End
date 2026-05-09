@@ -1,5 +1,4 @@
--- V1.0__Initial_schema.sql
--- Create users table
+
 CREATE TABLE users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
