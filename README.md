@@ -122,3 +122,18 @@ curl -X POST http://localhost:8080/api/transactions/transfer ^
 - Balance checks prevent negative balances.
 - Google tokens are verified on the backend using the configured client ID.
 - If you use a local frontend proxy, you can narrow or remove the CORS allow-list.
+
+## Layered Architecture
+This project is organized by feature, and each feature follows layered boundaries:
+- `api` – REST controllers, request/response DTOs, and input validation
+- `application` – use cases and orchestration logic
+- `domain` – core entities, enums, and business rules
+- `infrastructure` – JPA repositories and external adapters
+
+### Dependency rule
+- `api` may call `application`
+- `application` may call `domain`
+- `infrastructure` may implement `application` contracts and talk to the database/external systems
+- lower layers should not depend on higher layers
+
+For a Sinhala explanation, see `LAYERED_ARCHITECTURE_SI.md`.

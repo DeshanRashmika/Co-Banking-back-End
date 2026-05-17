@@ -34,10 +34,6 @@ google:
   oauth:
     client-id: ${GOOGLE_CLIENT_ID:your-client-id.apps.googleusercontent.com}
     verify-url: https://www.googleapis.com/oauth2/v3/tokeninfo
-
-server:
-  servlet:
-    context-path: /api
   port: 8080
   error:
     include-message: always
