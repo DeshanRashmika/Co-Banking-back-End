@@ -6,6 +6,7 @@ import edu.icet.banking.auth.api.dto.LoginRequest;
 import edu.icet.banking.auth.api.dto.RegisterRequest;
 import edu.icet.banking.auth.application.AuthService;
 import edu.icet.banking.auth.domain.entity.User;
+import edu.icet.banking.auth.infrastructure.security.BankingUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -35,7 +36,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public void logout(Authentication authentication) {
-        authService.logout(((User) authentication.getPrincipal()).getEmail());
+        authService.logout(((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 }
 

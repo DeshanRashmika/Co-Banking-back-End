@@ -1,6 +1,7 @@
 package edu.icet.banking.transactions.api;
 
 import edu.icet.banking.auth.domain.entity.User;
+import edu.icet.banking.auth.infrastructure.security.BankingUserDetails;
 import edu.icet.banking.transactions.api.dto.TransactionResponse;
 import edu.icet.banking.transactions.api.dto.TransferRequest;
 import edu.icet.banking.transactions.application.TransactionService;
@@ -20,12 +21,12 @@ public class TransactionController {
 
     @GetMapping("/{accountId}")
     public List<TransactionResponse> getTransactions(@PathVariable Long accountId, Authentication authentication) {
-        return transactionService.getTransactions(accountId, ((User) authentication.getPrincipal()).getEmail());
+        return transactionService.getTransactions(accountId, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/transfer")
     public TransactionResponse transfer(@Valid @RequestBody TransferRequest request, Authentication authentication) {
-        return transactionService.transfer(request, ((User) authentication.getPrincipal()).getEmail());
+        return transactionService.transfer(request, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 }
 

@@ -1,6 +1,7 @@
 package edu.icet.banking.notifications.api;
 
 import edu.icet.banking.auth.domain.entity.User;
+import edu.icet.banking.auth.infrastructure.security.BankingUserDetails;
 import edu.icet.banking.notifications.api.dto.NotificationResponse;
 import edu.icet.banking.notifications.application.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +19,17 @@ public class NotificationController {
 
     @GetMapping
     public List<NotificationResponse> getNotifications(Authentication authentication) {
-        return notificationService.getNotifications(((User) authentication.getPrincipal()).getEmail());
+        return notificationService.getNotifications(((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 
     @PutMapping("/{id}/read")
     public NotificationResponse markRead(@PathVariable Long id, Authentication authentication) {
-        return notificationService.markAsRead(id, ((User) authentication.getPrincipal()).getEmail());
+        return notificationService.markAsRead(id, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id, Authentication authentication) {
-        notificationService.delete(id, ((User) authentication.getPrincipal()).getEmail());
+        notificationService.delete(id, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 }
 

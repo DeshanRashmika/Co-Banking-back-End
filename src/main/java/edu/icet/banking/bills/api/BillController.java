@@ -1,6 +1,7 @@
 package edu.icet.banking.bills.api;
 
 import edu.icet.banking.auth.domain.entity.User;
+import edu.icet.banking.auth.infrastructure.security.BankingUserDetails;
 import edu.icet.banking.bills.api.dto.BillPaymentRequest;
 import edu.icet.banking.bills.api.dto.BillPaymentResponse;
 import edu.icet.banking.bills.api.dto.BillResponse;
@@ -21,12 +22,12 @@ public class BillController {
 
     @GetMapping
     public List<BillResponse> getBills(Authentication authentication) {
-        return billService.getBills(((User) authentication.getPrincipal()).getEmail());
+        return billService.getBills(((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/pay")
     public BillPaymentResponse pay(@Valid @RequestBody BillPaymentRequest request, Authentication authentication) {
-        return billService.payBill(request, ((User) authentication.getPrincipal()).getEmail());
+        return billService.payBill(request, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 }
 
