@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/register", "/auth/login", "/auth/google", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/accounts/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/accounts/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/transactions/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/transactions/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/bills/**").authenticated()
