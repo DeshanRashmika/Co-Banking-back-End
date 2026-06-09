@@ -1,10 +1,13 @@
 package edu.icet.banking.accounts.api;
 
+import edu.icet.banking.accounts.api.dto.AccountRequest;
 import edu.icet.banking.accounts.api.dto.AccountResponse;
 import edu.icet.banking.accounts.api.dto.BalanceResponse;
 import edu.icet.banking.accounts.application.AccountService;
 import edu.icet.banking.auth.infrastructure.security.BankingUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,12 @@ public class AccountController {
     @GetMapping
     public List<AccountResponse> getAccounts(Authentication authentication) {
         return accountService.getAccounts(((BankingUserDetails) authentication.getPrincipal()).getUsername());
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public AccountResponse createAccount(@Valid @RequestBody AccountRequest request, Authentication authentication) {
+        return accountService.createAccount(request, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
 
     @GetMapping("/{id}")
