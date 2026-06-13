@@ -45,13 +45,27 @@ public class TransactionService {
             throw new InvalidOperationException("Transfer amount must be greater than zero");
         }
 
-        Account fromAccount = accountRepository.findByIdForUpdate(request.getFromAccountId())
+        // Sort IDs to prevent deadlocks
+        Long firstId = request.getFromAccountId();
+        Long secondId = request.getToAccountId();
+        if (firstId > secondId) {
+            firstId = request.getToAccountId();
+            secondId = request.getFromAccountId();
+        }
+
+        // Acquire locks in a consistent order
+        accountRepository.findByIdForUpdate(firstId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", firstId));
+        accountRepository.findByIdForUpdate(secondId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", secondId));
+
+        Account fromAccount = accountRepository.findById(request.getFromAccountId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", request.getFromAccountId()));
         if (!fromAccount.getUser().getEmail().equalsIgnoreCase(email)) {
             throw new InvalidOperationException("You cannot transfer from an account you do not own");
         }
 
-        Account toAccount = accountRepository.findByIdForUpdate(request.getToAccountId())
+        Account toAccount = accountRepository.findById(request.getToAccountId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", request.getToAccountId()));
 
         if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
