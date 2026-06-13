@@ -59,11 +59,15 @@ public class AccountService {
     }
 
     private String generateAccountNumber() {
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 10; i++) {
-            sb.append(random.nextInt(10));
-        }
-        return sb.toString();
+        String accountNumber;
+        do {
+            Random random = new Random();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 10; i++) {
+                sb.append(random.nextInt(10));
+            }
+            accountNumber = sb.toString();
+        } while (accountRepository.existsByAccountNumber(accountNumber));
+        return accountNumber;
     }
 }
