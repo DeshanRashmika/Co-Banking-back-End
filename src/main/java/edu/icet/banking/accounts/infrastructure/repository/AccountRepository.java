@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findAllByUser_Email(String email);
     Optional<Account> findByIdAndUser_Email(Long id, String email);
+    boolean existsByAccountNumber(String accountNumber);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from Account a where a.id = :id")

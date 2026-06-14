@@ -51,6 +51,7 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
@@ -102,6 +103,8 @@ public class AuthService {
 
     private AuthResponse buildAuthResponse(User user) {
         String token = jwtTokenProvider.generateTokenFromEmail(user.getEmail());
+        refreshTokenRepository.deleteByUser(user);
+        
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(token + ".refresh")

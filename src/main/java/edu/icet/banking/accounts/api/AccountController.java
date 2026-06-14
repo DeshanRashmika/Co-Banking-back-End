@@ -30,6 +30,12 @@ public class AccountController {
     public AccountResponse createAccount(@Valid @RequestBody AccountRequest request, Authentication authentication) {
         return accountService.createAccount(request, ((BankingUserDetails) authentication.getPrincipal()).getUsername());
     }
+    @PostMapping("/top-up")
+    public AccountResponse topUpAccount(@Valid @RequestBody AccountRequest request, Authentication authentication) {
+        String email = ((BankingUserDetails) authentication.getPrincipal()).getUsername();
+
+        return accountService.topUp(request.getAccountId(), request.getAmount(), email);
+    }
 
     @GetMapping("/{id}")
     public AccountResponse getAccount(@PathVariable Long id, Authentication authentication) {

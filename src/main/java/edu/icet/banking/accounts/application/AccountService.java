@@ -70,4 +70,14 @@ public class AccountService {
         } while (accountRepository.existsByAccountNumber(accountNumber));
         return accountNumber;
     }
+    @Transactional
+    public AccountResponse topUp(Long accountId, BigDecimal amount, String email) {
+       Account account = accountRepository.findByIdAndUser_Email(accountId, email)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", accountId));
+
+       account.setBalance(account.getBalance().add(amount));
+
+       account = accountRepository.save(account);
+        return AccountResponse.from(account);
+    }
 }
