@@ -1,9 +1,7 @@
 package edu.icet.banking.auth.application;
 
-import edu.icet.banking.auth.api.dto.AuthResponse;
-import edu.icet.banking.auth.api.dto.GoogleAuthRequest;
-import edu.icet.banking.auth.api.dto.LoginRequest;
-import edu.icet.banking.auth.api.dto.RegisterRequest;
+import edu.icet.banking.accounts.application.AccountService;
+import edu.icet.banking.auth.api.dto.*;
 import edu.icet.banking.auth.api.mapper.AuthMapper;
 import edu.icet.banking.auth.domain.entity.RefreshToken;
 import edu.icet.banking.auth.domain.entity.User;
@@ -32,6 +30,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final AccountService accountService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -48,6 +47,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
+        accountService.createDefaultAccount(user);
         return buildAuthResponse(user);
     }
 
@@ -78,6 +78,8 @@ public class AuthService {
         String firstName = (String) idToken.getPayload().get("given_name");
         String lastName = (String) idToken.getPayload().get("family_name");
 
+        boolean isNewUser = !userRepository.existsByEmail(email);
+        
         User user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(
                 User.builder()
                         .email(email)
@@ -91,7 +93,18 @@ public class AuthService {
             user = userRepository.save(user);
         }
 
+        if (isNewUser) {
+            accountService.createDefaultAccount(user);
+        }
+
         return buildAuthResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+        return AuthMapper.toUserResponse(user);
     }
 
     @Transactional
