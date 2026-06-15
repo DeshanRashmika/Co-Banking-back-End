@@ -5,9 +5,11 @@ import edu.icet.banking.accounts.api.dto.AccountResponse;
 import edu.icet.banking.accounts.api.dto.BalanceResponse;
 import edu.icet.banking.accounts.domain.entity.Account;
 import edu.icet.banking.accounts.domain.entity.AccountStatus;
+import edu.icet.banking.accounts.domain.entity.AccountType;
 import edu.icet.banking.accounts.infrastructure.repository.AccountRepository;
 import edu.icet.banking.auth.domain.entity.User;
 import edu.icet.banking.auth.infrastructure.repository.UserRepository;
+import edu.icet.banking.common.exception.InvalidOperationException;
 import edu.icet.banking.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,19 @@ public class AccountService {
         return AccountResponse.from(account);
     }
 
+    @Transactional
+    public void createDefaultAccount(User user) {
+        Account account = Account.builder()
+                .user(user)
+                .accountNumber(generateAccountNumber())
+                .accountType(AccountType.SAVINGS)
+                .balance(BigDecimal.ZERO)
+                .currency("USD")
+                .status(AccountStatus.ACTIVE)
+                .build();
+        accountRepository.save(account);
+    }
+
     private String generateAccountNumber() {
         String accountNumber;
         do {
@@ -70,10 +85,15 @@ public class AccountService {
         } while (accountRepository.existsByAccountNumber(accountNumber));
         return accountNumber;
     }
+
     @Transactional
     public AccountResponse topUp(Long accountId, BigDecimal amount, String email) {
-       Account account = accountRepository.findByIdAndUser_Email(accountId, email)
+       Account account = accountRepository.findByIdForUpdate(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", accountId));
+
+       if (!account.getUser().getEmail().equalsIgnoreCase(email)) {
+           throw new InvalidOperationException("You cannot top up an account you do not own");
+       }
 
        account.setBalance(account.getBalance().add(amount));
 
