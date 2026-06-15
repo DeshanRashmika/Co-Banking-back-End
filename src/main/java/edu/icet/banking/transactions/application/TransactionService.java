@@ -2,7 +2,6 @@ package edu.icet.banking.transactions.application;
 
 import edu.icet.banking.accounts.domain.entity.Account;
 import edu.icet.banking.accounts.infrastructure.repository.AccountRepository;
-import edu.icet.banking.auth.domain.entity.User;
 import edu.icet.banking.common.exception.InsufficientFundsException;
 import edu.icet.banking.common.exception.InvalidOperationException;
 import edu.icet.banking.common.exception.ResourceNotFoundException;
@@ -45,28 +44,18 @@ public class TransactionService {
             throw new InvalidOperationException("Transfer amount must be greater than zero");
         }
 
-        // Sort IDs to prevent deadlocks
-        Long firstId = request.getFromAccountId();
-        Long secondId = request.getToAccountId();
-        if (firstId > secondId) {
-            firstId = request.getToAccountId();
-            secondId = request.getFromAccountId();
-        }
+        final Long firstId = request.getFromAccountId();
+        final Long secondId = request.getToAccountId();
 
-        // Acquire locks in a consistent order
-        accountRepository.findByIdForUpdate(firstId)
+        Account fromAccount = accountRepository.findByIdForUpdate(firstId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", firstId));
-        accountRepository.findByIdForUpdate(secondId)
+
+        Account toAccount = accountRepository.findByIdForUpdate(secondId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", secondId));
 
-        Account fromAccount = accountRepository.findById(request.getFromAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", request.getFromAccountId()));
         if (!fromAccount.getUser().getEmail().equalsIgnoreCase(email)) {
             throw new InvalidOperationException("You cannot transfer from an account you do not own");
         }
-
-        Account toAccount = accountRepository.findById(request.getToAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", request.getToAccountId()));
 
         if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
             throw new InsufficientFundsException(String.valueOf(fromAccount.getId()), request.getAmount().toPlainString());
@@ -74,6 +63,7 @@ public class TransactionService {
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(request.getAmount()));
         toAccount.setBalance(toAccount.getBalance().add(request.getAmount()));
+
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);
 
@@ -101,4 +91,3 @@ public class TransactionService {
         return TransactionResponse.from(transaction);
     }
 }
-
