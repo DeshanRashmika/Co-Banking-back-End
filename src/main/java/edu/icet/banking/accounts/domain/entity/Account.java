@@ -2,13 +2,10 @@ package edu.icet.banking.accounts.domain.entity;
 
 import edu.icet.banking.auth.domain.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "accounts", indexes = {
@@ -17,7 +14,10 @@ import java.time.LocalDateTime;
         @Index(name = "idx_status", columnList = "status"),
         @Index(name = "idx_created_at", columnList = "created_at")
 })
-@Data
+@Getter
+@Setter
+@ToString(exclude = "user")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -25,6 +25,7 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -48,16 +49,19 @@ public class Account {
     @Column(nullable = false)
     private AccountStatus status;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @PrePersist
     void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
         if (balance == null) balance = BigDecimal.ZERO;
         if (currency == null) currency = "USD";
         if (status == null) status = AccountStatus.ACTIVE;
@@ -65,7 +69,6 @@ public class Account {
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = Instant.now();
     }
 }
-
