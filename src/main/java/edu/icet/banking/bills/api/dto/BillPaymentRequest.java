@@ -1,12 +1,11 @@
 package edu.icet.banking.bills.api.dto;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import jakarta.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 
 @Data
