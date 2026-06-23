@@ -2,6 +2,8 @@ package edu.icet.banking.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -81,6 +83,42 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex,
+            WebRequest request) {
+        log.error("Access denied: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode("ACCESS_DENIED")
+            .message("You do not have permission to access this resource")
+            .timestamp(LocalDateTime.now().format(formatter))
+            .status(403)
+            .path(request.getDescription(false).replace("uri=", ""))
+            .error("Forbidden")
+            .build();
+
+        return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex,
+            WebRequest request) {
+        log.error("Malformed JSON request: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode("MALFORMED_JSON")
+            .message("Malformed JSON request")
+            .timestamp(LocalDateTime.now().format(formatter))
+            .status(400)
+            .path(request.getDescription(false).replace("uri=", ""))
+            .error("Bad Request")
+            .build();
+
+        return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
         log.error("Unexpected error: ", ex);
@@ -97,4 +135,3 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-
