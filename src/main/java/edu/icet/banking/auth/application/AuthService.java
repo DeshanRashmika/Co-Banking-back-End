@@ -70,7 +70,7 @@ public class AuthService {
     public AuthResponse googleLogin(GoogleAuthRequest request) {
         var idToken = googleTokenVerifier.verify(request.getIdToken());
         if (idToken == null) {
-            throw new InvalidOperationException("Invalid Google token");
+            throw new InvalidOperationException("Google authentication is disabled or token is invalid");
         }
 
         String email = idToken.getPayload().getEmail().toLowerCase();
@@ -79,7 +79,7 @@ public class AuthService {
         String lastName = (String) idToken.getPayload().get("family_name");
 
         boolean isNewUser = !userRepository.existsByEmail(email);
-        
+
         User user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(
                 User.builder()
                         .email(email)
@@ -114,10 +114,44 @@ public class AuthService {
         refreshTokenRepository.deleteByUser(user);
     }
 
+    @Transactional
+    public UserResponse updateProfile(String currentEmail, UserUpdateRequest request) {
+        User user = userRepository.findByEmail(currentEmail.toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", currentEmail));
+
+        if (!currentEmail.equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new InvalidOperationException("Email is already taken");
+        }
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail().toLowerCase());
+        user.setPhone(request.getPhone());
+
+        return AuthMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Transactional
+    public void changePassword(String email, PasswordChangeRequest request) {
+        User user = userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        if (user.getPasswordHash() == null) {
+            throw new InvalidOperationException("Cannot change password for Google-linked accounts");
+        }
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new InvalidOperationException("Invalid current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
     private AuthResponse buildAuthResponse(User user) {
         String token = jwtTokenProvider.generateTokenFromEmail(user.getEmail());
         refreshTokenRepository.deleteByUser(user);
-        
+
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(token + ".refresh")
