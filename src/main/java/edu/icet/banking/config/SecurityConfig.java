@@ -1,7 +1,10 @@
 package edu.icet.banking.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.icet.banking.auth.infrastructure.security.JwtAuthenticationEntryPoint;
 import edu.icet.banking.auth.infrastructure.security.JwtAuthenticationFilter;
+import edu.icet.banking.common.ratelimit.RateLimitFilter;
+import edu.icet.banking.common.ratelimit.RateLimiterService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +26,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimiterService rateLimiterService;
+    private final ObjectMapper objectMapper;
 
     private static final String[] PUBLIC_URLS = {
             "/auth/register", "/auth/login", "/auth/google",
@@ -48,6 +53,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RateLimitFilter rateLimitFilter() {
+        return new RateLimitFilter(rateLimiterService, objectMapper);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -61,6 +71,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
+        // Rate limit runs first, then JWT validation
+        http.addFilterBefore(rateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

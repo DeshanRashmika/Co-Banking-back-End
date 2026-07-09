@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -117,6 +118,25 @@ public class GlobalExceptionHandler {
             .build();
 
         return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitException(RateLimitException ex, WebRequest request) {
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode(ex.getErrorCode())
+            .message(ex.getMessage())
+            .timestamp(LocalDateTime.now().format(formatter))
+            .status(ex.getStatus().value())
+            .path(request.getDescription(false).replace("uri=", ""))
+            .error(ex.getStatus().getReasonPhrase())
+            .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()));
+
+        return new ResponseEntity<>(errorResponse, headers, ex.getStatus());
     }
 
     @ExceptionHandler(Exception.class)
