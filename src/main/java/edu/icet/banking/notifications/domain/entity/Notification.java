@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDateTime;
 
@@ -39,8 +40,8 @@ public class Notification {
     @Column(name = "notification_type", nullable = false)
     private NotificationType notificationType;
 
-    @Column(name = "is_read", nullable = false)
-    private boolean isRead;
+    @Column(nullable = false)
+    private boolean isRead = false;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
